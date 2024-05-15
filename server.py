@@ -1,12 +1,36 @@
 from socket import *
 from threading import *
+import pygame
+import sys
+
+import tkinter as tk
+from tkinter import simpledialog
+host ="127.0.0.1"
+port = 8000
+# Function to set the host and port variables
+def set_host_port():
+    global host, port
+    host = simpledialog.askstring("Input", "Enter host:", parent=root)
+    port = simpledialog.askinteger("Input", "Enter port:", parent=root)
+    # You can add validation or use the variables as needed here
+    root.destroy()
+
+# Create the main window
+root = tk.Tk()
+root.geometry("300x150")
+root.title("server")
+
+# Add a button to trigger the input dialog
+input_button = tk.Button(root, text="initiate server", command=set_host_port)
+input_button.pack(pady=20)
+
+# # Start the Tkinter event loop
+root.mainloop()
 
 state = []
 messages = []
 specific_enemy_pos = [100]
-# Connection Data
-host = '127.0.0.1'
-port = 8888
+
 
 
 def client_session(connection):
@@ -26,18 +50,20 @@ def client_recieve(connection):
 
         
 
-import pygame
-import random
-import sys
-colours = [(24, 208, 17),(255, 239, 0),(242, 0, 234),(5, 20, 240)]
+pygame.mixer.init()
+win_sound  = pygame.mixer.Sound('sound/win.mp3')
+lose_sound = pygame.mixer.Sound('sound/lose.mp3')
+ping_sound = pygame.mixer.Sound('sound/ping.mp3')
+shot_sound = pygame.mixer.Sound('sound/shot.mp3')
+boom_sound = pygame.mixer.Sound('sound/boom.mp3')
 
 # Initialize Pygame
 pygame.init()
-print("try")
+
 # Set up the display
 width, height = 800, 600
 screen = pygame.display.set_mode((width, height))
-pygame.display.set_caption('Pygame Shooter')
+pygame.display.set_caption('Star War')
 
 # Define colors
 WHITE = (255, 255, 255)
@@ -51,11 +77,11 @@ player_speed = 10
 
 # Enemy settings
 enemy_size = 50
-enemy_list = [[100, 100],[300, 100],[500, 100],[700, 100]]
+enemy_list = [[114, 100],[228, 100],[342, 100],[456, 100],[570, 100],[684, 100]]
   # Specific enemy for game over condition
 
 # Bullet settings
-bullet_size = 10
+bullet_size = 50
 bullet_pos = [0, 0]
 bullet_speed = 20
 bullet_state = "ready"
@@ -66,7 +92,7 @@ font = pygame.font.SysFont("monospace", 35)
 
 # Function to display the bullet count
 def display_bullet_count(bullet_count):
-    bullet_count_text = font.render("Bullets: " + str(bullet_count), True, BLACK)
+    bullet_count_text = font.render("Bullets: " + str(bullet_count), True, WHITE)
     screen.blit(bullet_count_text, (10, 10))
 
 # Function to detect collision
@@ -78,11 +104,74 @@ def detect_collision(bullet_pos, enemy_pos):
             return True
     return False
 
-def win():
-    # Send a win message to the client
-    connection.send('win'.encode())
-    # Display a win message on the server
-    print("You win!")
+def win(screen):
+    messages.append("win")
+
+    # Define the size and position of the alert box
+    alert_box_pos = (100, 100)
+    alert_box_size = (600, 100)
+    alert_box_color = (10, 255, 10)   # Red color
+    text_color = (255, 255, 255)  # White color
+
+    # Draw the alert box
+    pygame.draw.rect(screen, alert_box_color, (*alert_box_pos, *alert_box_size))
+    win_sound.play()
+    # Create a font object
+    font = pygame.font.Font(None, 36)
+
+    # Render the text
+    text = font.render("You win!", True, text_color)
+
+    # Get the text size
+    text_size = text.get_size()
+
+    # Calculate the position of the text
+    text_pos = (alert_box_pos[0] + (alert_box_size[0] - text_size[0]) / 2,
+                alert_box_pos[1] + (alert_box_size[1] - text_size[1]) / 2)
+
+    # Blit the text onto the screen
+    screen.blit(text, text_pos)
+
+    # Update the display
+    pygame.display.flip()
+
+    # Pause the game for a few seconds to show the alert
+    pygame.time.delay(4000)
+
+def lose(screen):
+    messages.append("lose")
+    # Define the size and position of the alert box
+    alert_box_pos = (100, 100)
+    alert_box_size = (600, 100)
+    alert_box_color = (250, 10, 10)  # Red color
+    text_color = (255, 255, 255)  # White color
+    lose_sound.play()
+    # Draw the alert box
+    pygame.draw.rect(screen, alert_box_color, (*alert_box_pos, *alert_box_size))
+
+    # Create a font object
+    font = pygame.font.Font(None, 36)
+
+    # Render the text
+    text = font.render("You Lose!", True, text_color)
+
+    # Get the text size
+    text_size = text.get_size()
+
+    # Calculate the position of the text
+    text_pos = (alert_box_pos[0] + (alert_box_size[0] - text_size[0]) / 2,
+                alert_box_pos[1] + (alert_box_size[1] - text_size[1]) / 2)
+
+    # Blit the text onto the screen
+    screen.blit(text, text_pos)
+
+    # Update the display
+    pygame.display.flip()
+
+    # Pause the game for a few seconds to show the alert
+    pygame.time.delay(4000)
+
+
 
 # Starting Server
 server = socket(AF_INET, SOCK_STREAM)
@@ -95,21 +184,37 @@ client_thread.start()
 print("try")
 
 
-# Game loop
 
+
+# Load the image and scale it to the size of the player rectangle
+player_image = pygame.image.load('images/plane/p.png')
+player_image = pygame.transform.scale(player_image, (player_size, player_size)).convert_alpha()
+
+# Load the image and scale it to the size of the player rectangle
+
+planets = [ 
+        pygame.transform.scale(pygame.image.load('images/planets/1.png'), (enemy_size, enemy_size)).convert_alpha(),
+        pygame.transform.scale(pygame.image.load('images/planets/2.png'), (enemy_size, enemy_size)).convert_alpha(),
+        pygame.transform.scale(pygame.image.load('images/planets/3.png'), (enemy_size, enemy_size)).convert_alpha(),
+        pygame.transform.scale(pygame.image.load('images/planets/4.png'), (enemy_size, enemy_size)).convert_alpha(),
+        pygame.transform.scale(pygame.image.load('images/planets/1.png'), (enemy_size, enemy_size)).convert_alpha(),
+        pygame.transform.scale(pygame.image.load('images/planets/2.png'), (enemy_size, enemy_size)).convert_alpha(),
+]
+
+laser_bullet = pygame.image.load('images/bullet.png')
+laser_bullet = pygame.transform.scale(laser_bullet, (bullet_size, bullet_size)).convert_alpha()
+
+# Game loop
 
 
 running = True
 while running:
     pygame.time.delay(20)
-    screen.fill(WHITE)
+    screen.fill(BLACK)
 
     # Draw enemies
-    i = 0
-    for enemy_pos in enemy_list:
-        pygame.draw.rect(screen, colours[i], (enemy_pos[0], enemy_pos[1], enemy_size, enemy_size))
-        i+=1
-
+    for i in range(len(planets)):
+        screen.blit(planets[i], enemy_list[i])
     # Display bullet count
     display_bullet_count(bullet_count)
 
@@ -128,6 +233,7 @@ while running:
     # Shooting bullets
     if keys[pygame.K_SPACE] and bullet_count > 0:
         if bullet_state == "ready":
+            shot_sound.play()
             bullet_state = "fire"
             bullet_pos[0] = player_pos[0] + player_size / 2 - bullet_size / 2
             bullet_pos[1] = player_pos[1]
@@ -135,27 +241,38 @@ while running:
 
     # Bullet movement
     if bullet_state == "fire":
-        pygame.draw.rect(screen, RED, (bullet_pos[0], bullet_pos[1], bullet_size, bullet_size))
+        screen.blit(laser_bullet, [bullet_pos[0],bullet_pos[1]])
         bullet_pos[1] -= bullet_speed
         if bullet_pos[1] < 0:
             bullet_state = "ready"
-
+        print(bullet_pos[1])
     # Collision detection
     for enemy_pos in enemy_list[:]:
         if detect_collision(bullet_pos, enemy_pos):
             if enemy_pos == specific_enemy_pos:
-                win()
+                win(screen)
                 pygame.quit()
                 sys.exit()  # End the game if the specific enemy is hit
-            enemy_list.remove(enemy_pos)
+            boom_sound.play()
+            hit_index = enemy_list.index(enemy_pos)
+            enemy_list.pop(hit_index)
+            planets.pop(hit_index)
             messages.append("d"+str(enemy_pos[0]))
+            if bullet_count <= 0 :
+                win(screen)
+                pygame.quit()
+                sys.exit()
             bullet_state = "ready"
 
     curr_state = str(player_pos[0]) + "$" + str(bullet_pos[0])+"$"+str(bullet_pos[1])+"$"+bullet_state
     messages.append(curr_state)
     # Draw player
-    pygame.draw.rect(screen, RED, (player_pos[0], player_pos[1], player_size, player_size))
-
+    screen.blit(player_image, player_pos)
+    
+    if bullet_count <= 0 and bullet_pos[1]<=0:
+        lose(screen)
+        pygame.quit()
+        sys.exit() 
     # Update display
     pygame.display.update()
 

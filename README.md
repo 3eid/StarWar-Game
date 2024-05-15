@@ -2,7 +2,7 @@
 
 StarWar is an exciting multiplayer game developed using Python, Pygame, and Socket programming. One player acts as the server and controls an aircraft, trying to guess and shoot the planet selected by the client. The client simply selects a planet and tries to avoid detection.
 
-![Game Screenshot](screenshots/gameplay.png)
+![Game Screenshot](screenshots/server_gameplay.png)
 
 ## Table of Contents
 - [Features](#features)

@@ -31,7 +31,7 @@ StarWar is an exciting multiplayer game developed using Python, Pygame, and Sock
 ## Installation
 1. Clone the repository:
     ```sh
-    git clone https://github.com/your-username/StarWar-Multiplayer-Python-Pygame-Over-Socket-Game.git
+    git clone https://github.com/3eid/StarWar-Multiplayer-Python-Pygame-Over-Socket-Game.git
     ```
 2. Navigate to the project directory:
     ```sh
